@@ -40,28 +40,28 @@
 
 union i2c_smbus_data
 {
-  uint8_t  byte ;
-  uint16_t word ;
-  uint8_t  block [I2C_SMBUS_BLOCK_MAX + 2] ;	// block [0] is used for length + one more for PEC
-} ;
+  uint8_t  byte;
+  uint16_t word;
+  uint8_t  block[I2C_SMBUS_BLOCK_MAX + 2];	// block[0] is used for length + one more for PEC
+};
 
 struct i2c_smbus_ioctl_data
 {
-  char read_write ;
-  uint8_t command ;
-  int size ;
-  union i2c_smbus_data *data ;
-} ;
+  char read_write;
+  uint8_t command;
+  int size;
+  union i2c_smbus_data *data;
+};
 
 static inline int i2c_smbus_access (int fd, char rw, uint8_t command, int size, union i2c_smbus_data *data)
 {
-  struct i2c_smbus_ioctl_data args ;
+  struct i2c_smbus_ioctl_data args;
 
-  args.read_write = rw ;
-  args.command    = command ;
-  args.size       = size ;
-  args.data       = data ;
-  return ioctl (fd, I2C_SMBUS, &args) ;
+  args.read_write = rw;
+  args.command    = command;
+  args.size       = size;
+  args.data       = data;
+  return ioctl (fd, I2C_SMBUS, &args);
 }
 
 
@@ -73,12 +73,12 @@ static inline int i2c_smbus_access (int fd, char rw, uint8_t command, int size, 
 
 int i2cRead (int fd)
 {
-  union i2c_smbus_data data ;
+  union i2c_smbus_data data;
 
   if (i2c_smbus_access (fd, I2C_SMBUS_READ, 0, I2C_SMBUS_BYTE, &data))
-    return -1 ;
+    return -1;
   else
-    return data.byte & 0xFF ;
+    return data.byte & 0xFF;
 }
 
 
@@ -93,9 +93,9 @@ int i2cReadReg8 (int fd, int reg)
   union i2c_smbus_data data;
 
   if (i2c_smbus_access (fd, I2C_SMBUS_READ, reg, I2C_SMBUS_BYTE_DATA, &data))
-    return -1 ;
+    return -1;
   else
-    return data.byte & 0xFF ;
+    return data.byte & 0xFF;
 }
 
 int i2cReadReg16 (int fd, int reg)
@@ -103,9 +103,9 @@ int i2cReadReg16 (int fd, int reg)
   union i2c_smbus_data data;
 
   if (i2c_smbus_access (fd, I2C_SMBUS_READ, reg, I2C_SMBUS_WORD_DATA, &data))
-    return -1 ;
+    return -1;
   else
-    return data.word & 0xFFFF ;
+    return data.word & 0xFFFF;
 }
 
 
@@ -117,7 +117,7 @@ int i2cReadReg16 (int fd, int reg)
 
 int i2cWrite (int fd, int data)
 {
-  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, data, I2C_SMBUS_BYTE, NULL) ;
+  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, data, I2C_SMBUS_BYTE, NULL);
 }
 
 
@@ -129,18 +129,18 @@ int i2cWrite (int fd, int data)
 
 int i2cWriteReg8 (int fd, int reg, int value)
 {
-  union i2c_smbus_data data ;
+  union i2c_smbus_data data;
 
-  data.byte = value ;
-  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, reg, I2C_SMBUS_BYTE_DATA, &data) ;
+  data.byte = value;
+  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, reg, I2C_SMBUS_BYTE_DATA, &data);
 }
 
 int i2cWriteReg16 (int fd, int reg, int value)
 {
-  union i2c_smbus_data data ;
+  union i2c_smbus_data data;
 
-  data.word = value ;
-  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, reg, I2C_SMBUS_WORD_DATA, &data) ;
+  data.word = value;
+  return i2c_smbus_access (fd, I2C_SMBUS_WRITE, reg, I2C_SMBUS_WORD_DATA, &data);
 }
 
 
@@ -153,15 +153,15 @@ int i2cWriteReg16 (int fd, int reg, int value)
 
 int i2cSetupInterface (const char *device, int devId)
 {
-    int fd ;
+    int fd;
     
     if ((fd = open (device, O_RDWR)) < 0)
-      return nightWiringFailure (NW_ALMOST, "Unable to open I2C device: %s\n", strerror (errno)) ;
+      return nightWiringFailure (NW_ALMOST, "Unable to open I2C device: %s\n", strerror (errno));
     
     if (ioctl (fd, I2C_SLAVE, devId) < 0)
-      return nightWiringFailure (NW_ALMOST, "Unable to select I2C device: %s\n", strerror (errno)) ;
+      return nightWiringFailure (NW_ALMOST, "Unable to select I2C device: %s\n", strerror (errno));
     
-    return fd ;
+    return fd;
 }
 
 
@@ -173,5 +173,5 @@ int i2cSetupInterface (const char *device, int devId)
 
 int i2cSetup (const char *device, const int devId)
 {
-  return i2cSetupInterface (device, devId) ;
+  return i2cSetupInterface (device, devId);
 }

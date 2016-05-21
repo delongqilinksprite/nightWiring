@@ -12,8 +12,8 @@
 
 
 // The SPI bus parameters
-const static uint8_t     spiBPW   = 8 ;
-const static uint16_t    spiDelay = 0 ;
+const static uint8_t     spiBPW   = 8;
+const static uint16_t    spiDelay = 0;
 
 /*
  * spiDataRW:
@@ -26,17 +26,17 @@ const static uint16_t    spiDelay = 0 ;
 
 int spiDataTransfer (int fd, unsigned char *data, int len)
 {
-  struct spi_ioc_transfer spiMsg ;
+  struct spi_ioc_transfer spiMsg;
 
-  memset (&spiMsg, 0, sizeof (spiMsg)) ;
+  memset (&spiMsg, 0, sizeof (spiMsg));
 
-  spiMsg.tx_buf        = (unsigned long)data ;
-  spiMsg.rx_buf        = (unsigned long)data ;
-  spiMsg.len           = len ;
-  spiMsg.delay_usecs   = spiDelay ;
-  spiMsg.bits_per_word = spiBPW ;
+  spiMsg.tx_buf        = (unsigned long)data;
+  spiMsg.rx_buf        = (unsigned long)data;
+  spiMsg.len           = len;
+  spiMsg.delay_usecs   = spiDelay;
+  spiMsg.bits_per_word = spiBPW;
 
-  return ioctl (fd, SPI_IOC_MESSAGE(1), &spiMsg) ;
+  return ioctl (fd, SPI_IOC_MESSAGE(1), &spiMsg);
 }
 
 
@@ -48,24 +48,24 @@ int spiDataTransfer (int fd, unsigned char *data, int len)
 
 int spiSetupMode (const char *spidev, int speed, int mode)
 {
-  int fd ;
+  int fd;
 
-  mode    &= 3 ;	// Mode is 0, 1, 2 or 3
+  mode    &= 3;	// Mode is 0, 1, 2 or 3
   if ((fd = open (spidev, O_RDWR)) < 0)
-    return nightWiringFailure (NW_ALMOST, "Unable to open SPI device: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "Unable to open SPI device: %s\n", strerror (errno));
 
 // Set SPI parameters.
 
   if (ioctl (fd, SPI_IOC_WR_MODE, &mode)            < 0)
-    return nightWiringFailure (NW_ALMOST, "SPI Mode Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI Mode Change failure: %s\n", strerror (errno));
   
   if (ioctl (fd, SPI_IOC_WR_BITS_PER_WORD, &spiBPW) < 0)
-    return nightWiringFailure (NW_ALMOST, "SPI BPW Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI BPW Change failure: %s\n", strerror (errno));
 
   if (ioctl (fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed)   < 0)
-    return nightWiringFailure (NW_ALMOST, "SPI Speed Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI Speed Change failure: %s\n", strerror (errno));
 
-  return fd ;
+  return fd;
 }
 
 
@@ -77,5 +77,5 @@ int spiSetupMode (const char *spidev, int speed, int mode)
 
 int spiSetup (const char *spidev, int speed)
 {
-  return spiSetupMode (spidev, speed, 0) ;
+  return spiSetupMode (spidev, speed, 0);
 }

@@ -13,7 +13,10 @@
 
 // Handy defines
 
-// nightWiring modes
+// nightWiring GPIO definitons
+#ifndef	NW_PIN_MAX
+#  define	NW_PIN_MAX      64
+#endif
 
 #define	WPI_MODE_PINS		 0
 #define	WPI_MODE_GPIO		 1
@@ -23,188 +26,38 @@
 #define	WPI_MODE_UNINITIALISED	-1
 
 // Pin modes
+#define	INPUT           0
+#define	OUTPUT          1
 
-#define	INPUT			 0
-#define	OUTPUT			 1
-#define	PWM_OUTPUT		 2
-#define	GPIO_CLOCK		 3
-#define	SOFT_PWM_OUTPUT		 4
-#define	SOFT_TONE_OUTPUT	 5
-#define	PWM_TONE_OUTPUT		 6
+#define	LOW             0
+#define	HIGH            1
 
-#define	LOW			 0
-#define	HIGH			 1
-
-// Pull up/down/none
-
-#define	PUD_OFF			 0
-#define	PUD_DOWN		 1
-#define	PUD_UP			 2
-
-// PWM
-
-#define	PWM_MODE_MS		0
-#define	PWM_MODE_BAL		1
+// Pull up/down/none (reserved)
+#define	PUD_OFF         0
+#define	PUD_DOWN        1
+#define	PUD_UP          2
 
 // Interrupt levels
-
-#define	INT_EDGE_SETUP		0
-#define	INT_EDGE_FALLING	1
-#define	INT_EDGE_RISING		2
-#define	INT_EDGE_BOTH		3
-
-// Pi model types and version numbers
-//	Intended for the GPIO program Use at your own risk.
-
-#define	PI_MODEL_A		0
-#define	PI_MODEL_B		1
-#define	PI_MODEL_AP		2
-#define	PI_MODEL_BP		3
-#define	PI_MODEL_2		4
-#define	PI_ALPHA		5
-#define	PI_MODEL_CM		6
-#define	PI_MODEL_07		7
-#define	PI_MODEL_3		8
-#define	PI_MODEL_ZERO		9
-
-#define	PI_VERSION_1		0
-#define	PI_VERSION_1_1		1
-#define	PI_VERSION_1_2		2
-#define	PI_VERSION_2		3
-
-#define	PI_MAKER_SONY		0
-#define	PI_MAKER_EGOMAN		1
-#define	PI_MAKER_MBEST		2
-#define	PI_MAKER_UNKNOWN	3
-
-extern const char *piModelNames    [16] ;
-extern const char *piRevisionNames [16] ;
-extern const char *piMakerNames    [16] ;
-extern const int   piMemorySize    [ 8] ;
-
-
-//	Intended for the GPIO program Use at your own risk.
-
-// Threads
-
-#define	PI_THREAD(X)	void *X (void *dummy)
-
-// Failure modes
-
-#define	WPI_FATAL	(1==1)
-#define	WPI_ALMOST	(1==2)
-
-
-// nightWiringNodeStruct:
-//	This describes additional device nodes in the extended nightWiring
-//	2.0 scheme of things.
-//	It's a simple linked list for now, but will hopefully migrate to 
-//	a binary tree for efficiency reasons - but then again, the chances
-//	of more than 1 or 2 devices being added are fairly slim, so who
-//	knows....
-
-struct nightWiringNodeStruct
-{
-  int     pinBase ;
-  int     pinMax ;
-
-  int          fd ;	// Node specific
-  unsigned int data0 ;	//  ditto
-  unsigned int data1 ;	//  ditto
-  unsigned int data2 ;	//  ditto
-  unsigned int data3 ;	//  ditto
-
-  void   (*pinMode)         (struct nightWiringNodeStruct *node, int pin, int mode) ;
-  void   (*pullUpDnControl) (struct nightWiringNodeStruct *node, int pin, int mode) ;
-  int    (*digitalRead)     (struct nightWiringNodeStruct *node, int pin) ;
-  void   (*digitalWrite)    (struct nightWiringNodeStruct *node, int pin, int value) ;
-  void   (*pwmWrite)        (struct nightWiringNodeStruct *node, int pin, int value) ;
-  int    (*analogRead)      (struct nightWiringNodeStruct *node, int pin) ;
-  void   (*analogWrite)     (struct nightWiringNodeStruct *node, int pin, int value) ;
-
-  struct nightWiringNodeStruct *next ;
-} ;
-
-extern struct nightWiringNodeStruct *nightWiringNodes ;
-
+#define	INT_EDGE_NONE     0
+#define	INT_EDGE_FALLING  1
+#define	INT_EDGE_RISING   2
+#define	INT_EDGE_BOTH     3
 
 // Function prototypes
-//	c++ wrappers thanks to a comment by Nick Lott
-//	(and others on the Raspberry Pi forums)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Data
+// Core GPIO functions
+extern int nightWiringGpioSetup (int *pinMap, int pinNum);
 
-// Internal
-
-extern int nightWiringFailure (int fatal, const char *message, ...) ;
-
-// Core nightWiring functions
-
-extern struct nightWiringNodeStruct *nightWiringFindNode (int pin) ;
-extern struct nightWiringNodeStruct *nightWiringNewNode  (int pinBase, int numPins) ;
-
-extern int  nightWiringSetup       (void) ;
-extern int  nightWiringSetupSys    (void) ;
-extern int  nightWiringSetupGpio   (void) ;
-extern int  nightWiringSetupPhys   (void) ;
-
-extern void pinModeAlt          (int pin, int mode) ;
-extern void pinMode             (int pin, int mode) ;
-extern void pullUpDnControl     (int pin, int pud) ;
-extern int  digitalRead         (int pin) ;
-extern void digitalWrite        (int pin, int value) ;
-extern void pwmWrite            (int pin, int value) ;
-extern int  analogRead          (int pin) ;
-extern void analogWrite         (int pin, int value) ;
-
-// PiFace specifics 
-//	(Deprecated)
-
-extern int  nightWiringSetupPiFace (void) ;
-extern int  nightWiringSetupPiFaceForGpioProg (void) ;	// Don't use this - for gpio program only
-
-// On-Board Raspberry Pi hardware specific stuff
-
-extern          int  piBoardRev          (void) ;
-extern          void piBoardId           (int *model, int *rev, int *mem, int *maker, int *overVolted) ;
-extern          int  wpiPinToGpio        (int wpiPin) ;
-extern          int  physPinToGpio       (int physPin) ;
-extern          void setPadDrive         (int group, int value) ;
-extern          int  getAlt              (int pin) ;
-extern          void pwmToneWrite        (int pin, int freq) ;
-extern          void digitalWriteByte    (int value) ;
-extern unsigned int  digitalReadByte     (void) ;
-extern          void pwmSetMode          (int mode) ;
-extern          void pwmSetRange         (unsigned int range) ;
-extern          void pwmSetClock         (int divisor) ;
-extern          void gpioClockSet        (int pin, int freq) ;
+extern void pinMode             (int pin, int mode);
+extern int  digitalRead         (int pin);
+extern void digitalWrite        (int pin, int value);
 
 // Interrupts
-//	(Also Pi hardware specific)
-
-extern int  waitForInterrupt    (int pin, int mS) ;
-extern int  nightWiringISR         (int pin, int mode, void (*function)(void)) ;
-
-// Threads
-
-extern int  piThreadCreate      (void *(*fn)(void *)) ;
-extern void piLock              (int key) ;
-extern void piUnlock            (int key) ;
-
-// Schedulling priority
-
-extern int piHiPri (const int pri) ;
-
-// Extras from arduino land
-
-extern void         delay             (unsigned int howLong) ;
-extern void         delayMicroseconds (unsigned int howLong) ;
-extern unsigned int millis            (void) ;
-extern unsigned int micros            (void) ;
+extern int  waitForInterrupt    (int pin, int mS);
+extern int  nightWiringISR      (int pin, int mode, void (*function)(void));
 
 #ifdef __cplusplus
 }

@@ -23,18 +23,37 @@
 #include "nightWiring.h"
 
 // Time for easy calculations
-
-static uint64_t epochMilli, epochMicro ;
-
-// Misc
-
-static pthread_mutex_t pinMutex ;
+static uint64_t epochMilli, epochMicro;
 
 // Debugging & Return codes
+int nightWiringReturnCodes = FALSE;
 
-int nightWiringDebug       = FALSE ;
-int nightWiringReturnCodes = FALSE ;
+static void initialiseEpoch (void);
 
+/*
+ * nightWiringSetup:
+ *	Not really need to call this, unless you want to use timing funtions.
+ *********************************************************************************
+ */
+
+int nightWiringSetup (void)
+{
+  static int alreadyCalled = FALSE;
+
+// Make sure the setup function only be called once.
+  if (alreadyCalled)
+    (void)nightWiringFailure (NW_FATAL, "nightWiringSetup*: You must only call this once per program run. This is a fatal error. Please fix your code.\n");
+
+  alreadyCalled = TRUE;
+
+// Root check.
+    if (geteuid () != 0)
+      (void)nightWiringFailure (NW_FATAL, "nightWiringSetup: Must be root. (Did you forget sudo?)\n");
+
+  initialiseEpoch ();
+
+  return 0;
+}
 
 /*
  * nightWiringFailure:
@@ -44,20 +63,20 @@ int nightWiringReturnCodes = FALSE ;
 
 int nightWiringFailure (int fatal, const char *message, ...)
 {
-  va_list argp ;
-  char buffer [1024] ;
+  va_list argp;
+  char buffer[1024];
 
   if (!fatal && nightWiringReturnCodes)
-    return -1 ;
+    return -1;
 
-  va_start (argp, message) ;
-    vsnprintf (buffer, 1023, message, argp) ;
-  va_end (argp) ;
+  va_start (argp, message);
+    vsnprintf (buffer, 1023, message, argp);
+  va_end (argp);
 
-  fprintf (stderr, "%s", buffer) ;
-  exit (EXIT_FAILURE) ;
+  fprintf (stderr, "%s", buffer);
+  exit (EXIT_FAILURE);
 
-  return 0 ;
+  return 0;
 }
 
 
@@ -71,11 +90,11 @@ int nightWiringFailure (int fatal, const char *message, ...)
 
 static void initialiseEpoch (void)
 {
-  struct timeval tv ;
+  struct timeval tv;
 
-  gettimeofday (&tv, NULL) ;
-  epochMilli = (uint64_t)tv.tv_sec * (uint64_t)1000    + (uint64_t)(tv.tv_usec / 1000) ;
-  epochMicro = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)(tv.tv_usec) ;
+  gettimeofday (&tv, NULL);
+  epochMilli = (uint64_t)tv.tv_sec * (uint64_t)1000    + (uint64_t)(tv.tv_usec / 1000);
+  epochMicro = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)(tv.tv_usec);
 }
 
 
@@ -87,12 +106,12 @@ static void initialiseEpoch (void)
 
 void delay (unsigned int howLong)
 {
-  struct timespec sleeper, dummy ;
+  struct timespec sleeper, dummy;
 
-  sleeper.tv_sec  = (time_t)(howLong / 1000) ;
-  sleeper.tv_nsec = (long)(howLong % 1000) * 1000000 ;
+  sleeper.tv_sec  = (time_t)(howLong / 1000);
+  sleeper.tv_nsec = (long)(howLong % 1000) * 1000000;
 
-  nanosleep (&sleeper, &dummy) ;
+  nanosleep (&sleeper, &dummy);
 }
 
 
@@ -116,32 +135,32 @@ void delay (unsigned int howLong)
 
 void delayMicrosecondsHard (unsigned int howLong)
 {
-  struct timeval tNow, tLong, tEnd ;
+  struct timeval tNow, tLong, tEnd;
 
-  gettimeofday (&tNow, NULL) ;
-  tLong.tv_sec  = howLong / 1000000 ;
-  tLong.tv_usec = howLong % 1000000 ;
-  timeradd (&tNow, &tLong, &tEnd) ;
+  gettimeofday (&tNow, NULL);
+  tLong.tv_sec  = howLong / 1000000;
+  tLong.tv_usec = howLong % 1000000;
+  timeradd (&tNow, &tLong, &tEnd);
 
   while (timercmp (&tNow, &tEnd, <))
-    gettimeofday (&tNow, NULL) ;
+    gettimeofday (&tNow, NULL);
 }
 
 void delayMicroseconds (unsigned int howLong)
 {
-  struct timespec sleeper ;
-  unsigned int uSecs = howLong % 1000000 ;
-  unsigned int wSecs = howLong / 1000000 ;
+  struct timespec sleeper;
+  unsigned int uSecs = howLong % 1000000;
+  unsigned int wSecs = howLong / 1000000;
 
   /**/ if (howLong ==   0)
-    return ;
+    return;
   else if (howLong  < 100)
-    delayMicrosecondsHard (howLong) ;
+    delayMicrosecondsHard (howLong);
   else
   {
-    sleeper.tv_sec  = wSecs ;
-    sleeper.tv_nsec = (long)(uSecs * 1000L) ;
-    nanosleep (&sleeper, NULL) ;
+    sleeper.tv_sec  = wSecs;
+    sleeper.tv_nsec = (long)(uSecs * 1000L);
+    nanosleep (&sleeper, NULL);
   }
 }
 
@@ -154,13 +173,13 @@ void delayMicroseconds (unsigned int howLong)
 
 unsigned int millis (void)
 {
-  struct timeval tv ;
-  uint64_t now ;
+  struct timeval tv;
+  uint64_t now;
 
-  gettimeofday (&tv, NULL) ;
-  now  = (uint64_t)tv.tv_sec * (uint64_t)1000 + (uint64_t)(tv.tv_usec / 1000) ;
+  gettimeofday (&tv, NULL);
+  now  = (uint64_t)tv.tv_sec * (uint64_t)1000 + (uint64_t)(tv.tv_usec / 1000);
 
-  return (uint32_t)(now - epochMilli) ;
+  return (uint32_t)(now - epochMilli);
 }
 
 
@@ -172,55 +191,11 @@ unsigned int millis (void)
 
 unsigned int micros (void)
 {
-  struct timeval tv ;
-  uint64_t now ;
+  struct timeval tv;
+  uint64_t now;
 
-  gettimeofday (&tv, NULL) ;
-  now  = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)tv.tv_usec ;
+  gettimeofday (&tv, NULL);
+  now  = (uint64_t)tv.tv_sec * (uint64_t)1000000 + (uint64_t)tv.tv_usec;
 
-  return (uint32_t)(now - epochMicro) ;
+  return (uint32_t)(now - epochMicro);
 }
-
-
-/*
- * nightWiringSetup:
- *	Must be called once at the start of your program execution.
- *
- * Default setup: Initialises the system into nightWiring Pin mode and uses the
- *	memory mapped hardware directly.
- *
- * Changed now to revert to "gpio" mode if we're running on a Compute Module.
- *********************************************************************************
- */
-
-int nightWiringSetup (void)
-{
-  int   fd ;
-  int   boardRev ;
-  int   model, rev, mem, maker, overVolted ;
-  static int alreadyCalled = FALSE ;
-
-// This is here to trap the unwary - those who's program appears to work then fails some
-//	time later with a weird error message because you run out of file-handles.
-
-  if (alreadyCalled)
-    (void)nightWiringFailure (NW_FATAL, "nightWiringSetup*: You must only call this once per program run. This is a fatal error. Please fix your code.\n") ;
-
-  alreadyCalled = TRUE ;
-
-
-//	This check is here because people are too stupid to check for themselves or read
-//		error messages.
-
-    if (geteuid () != 0)
-      (void)nightWiringFailure (NW_FATAL, "nightWiringSetup: Must be root. (Did you forget sudo?)\n") ;
-
-    if ((fd = open ("/dev/mem", O_RDWR | O_SYNC | O_CLOEXEC) ) < 0)
-      return nightWiringFailure (NW_ALMOST, "nightWiringSetup: Unable to open /dev/mem: %s\n", strerror (errno)) ;
-
-
-  initialiseEpoch () ;
-
-  return 0 ;
-}
-

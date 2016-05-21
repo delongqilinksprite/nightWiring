@@ -16,6 +16,7 @@ DYNAMIC=libnightWiring.so.$(VERSION)
 #DEBUG	= -g -O0
 DEBUG	= -O2
 CC	= gcc
+#CC	= arm-linux-gnueabihf-gcc-4.8
 INCLUDE	= -I.
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
@@ -27,15 +28,15 @@ LIBS    =
 SRC	=		nightWiring.c								\
 			nightWiringSerial.c							\
 			nightWiringPriority.c nightWiringThread.c	\
-			nightWiringSPI.c nightWiringI2C.c
-#			nightWiringGPIO.c nightWiringShift.c		\
-#			nightWiringSoftPwm.c nightWiringSoftTone.c 
+			nightWiringSPI.c nightWiringI2C.c			\
+			nightWiringGPIO.c nightWiringShift.c        \
+			nightWiringSoftPwm.c nightWiringSoftTone.c 
 
 HEADERS =	nightWiring.h								\
 			nightWiringSerial.h							\
-			nightWiringSPI.h nightWiringI2C.h
-#			nightWiringGPIO.h nightWiringShift.h		\
-#			nightWiringSoftPwm.h nightWiringSoftTone.h
+			nightWiringSPI.h nightWiringI2C.h			\
+			nightWiringGPIO.h nightWiringShift.h        \
+			nightWiringSoftPwm.h nightWiringSoftTone.h
 
 
 OBJ	=	$(SRC:.c=.o)
@@ -48,7 +49,6 @@ $(STATIC):	$(OBJ)
 	$Q echo "[Link (Static)]"
 	$Q ar rcs $(STATIC) $(OBJ)
 	$Q ranlib $(STATIC)
-#	@size   $(STATIC)
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
@@ -126,7 +126,7 @@ nightWiringPriority.o: nightWiring.h
 nightWiringThread.o: nightWiring.h
 
 # GPIO Dependent Modules
-#nightWiringGPIO.o: nightWiringsoftPwm.h nightWiringsoftTone.h nightWiringGPIO.h nightWiring.h
-#softPwm.o: nightWiring.h softPwm.h
-#softTone.o: nightWiring.h softTone.h
-#wiringShift.o: nightWiring.h nightWiringShift.h
+nightWiringGPIO.o: nightWiringGPIO.h nightWiring.h
+wiringShift.o: nightWiring.h nightWiringGPIO.h nightWiringShift.h
+softPwm.o: nightWiring.h nightWiringGPIO.h softPwm.h
+softTone.o: nightWiring.h nightWiringGPIO.h softTone.h

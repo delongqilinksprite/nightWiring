@@ -5,9 +5,9 @@ extern "C" {
 #endif
 
 
-int spiDataTransfer (int fd, unsigned char *data, int len) ;
-int spiSetupMode (const char *spidev, int speed, int mode) ;
-int spiSetup (const char *spidev, int speed) ;
+int spiDataTransfer (int fd, unsigned char *data, int len);
+int spiSetupMode (const char *spidev, int speed, int mode);
+int spiSetup (const char *spidev, int speed);
 
 #ifdef __cplusplus
 }

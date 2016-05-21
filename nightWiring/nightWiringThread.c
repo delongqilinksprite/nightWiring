@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include "nightWiring.h"
 
-static pthread_mutex_t nightWiringMutexes [4] ;
+static pthread_mutex_t nightWiringMutexes[4];
 
 
 
@@ -15,9 +15,9 @@ static pthread_mutex_t nightWiringMutexes [4] ;
 
 int nightWiringThreadCreate (void *(*fn)(void *))
 {
-  pthread_t myThread ;
+  pthread_t myThread;
 
-  return pthread_create (&myThread, NULL, fn, NULL) ;
+  return pthread_create (&myThread, NULL, fn, NULL);
 }
 
 /*
@@ -30,11 +30,11 @@ int nightWiringThreadCreate (void *(*fn)(void *))
 
 void nightWiringLock (int key)
 {
-  pthread_mutex_lock (&nightWiringMutexes [key]) ;
+  pthread_mutex_lock (&nightWiringMutexes[key]);
 }
 
 void nightWiringUnlock (int key)
 {
-  pthread_mutex_unlock (&nightWiringMutexes [key]) ;
+  pthread_mutex_unlock (&nightWiringMutexes[key]);
 }
 

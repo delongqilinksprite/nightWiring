@@ -1,5 +1,5 @@
 /***************************************************
-            For Fennec BMC Pipline Debug
+           For nightWiring Serial Debug
         By Xiaohai Li (haixiaolee@gmail.com)
 ***************************************************/
 
@@ -18,7 +18,7 @@ int SerialInit(void)
     return pipFd;
 }
 
-void ThserialGet(void)
+void* ThserialGet(void *args)
 {
     while(1)
     {
