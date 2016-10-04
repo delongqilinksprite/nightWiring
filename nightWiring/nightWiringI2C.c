@@ -201,10 +201,10 @@ int i2cSetupInterface (const char *device, int devId)
     int fd ;
     
     if ((fd = open (device, O_RDWR)) < 0)
-      return wiringPiFailure (NW_ALMOST, "Unable to open I2C device: %s\n", strerror (errno)) ;
+      return nightWiringFailure (NW_ALMOST, "Unable to open I2C device: %s\n", strerror (errno)) ;
     
     if (ioctl (fd, I2C_SLAVE, devId) < 0)
-      return wiringPiFailure (NW_ALMOST, "Unable to select I2C device: %s\n", strerror (errno)) ;
+      return nightWiringFailure (NW_ALMOST, "Unable to select I2C device: %s\n", strerror (errno)) ;
     
     return fd ;
 }

@@ -26,10 +26,10 @@
 extern "C" {
 #endif
 
-int nightWiringSPIGetFd     (int channel) ;
-int nightWiringSPIDataRW    (int channel, unsigned char *data, int len) ;
-int nightWiringSPISetupMode (int channel, int speed, int mode) ;
-int nightWiringSPISetup     (int channel, int speed) ;
+
+int spiDataTransfer (int fd, unsigned char *data, int len) ;
+int spiSetupMode (const char *spidev, int speed, int mode) ;
+int spiSetup (const char *spidev, int speed) ;
 
 #ifdef __cplusplus
 }

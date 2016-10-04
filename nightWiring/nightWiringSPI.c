@@ -31,33 +31,12 @@
 #include <linux/spi/spidev.h>
 
 #include "nightWiring.h"
-
-#include "spi.h"
+#include "nightWiringSPI.h"
 
 
 // The SPI bus parameters
-//	Variables as they need to be passed as pointers later on
-
-//const static char       *spiDev0  = "/dev/spidev0.0" ;
-//const static char       *spiDev1  = "/dev/spidev0.1" ;
 const static uint8_t     spiBPW   = 8 ;
 const static uint16_t    spiDelay = 0 ;
-
-static uint32_t    spiSpeeds [16] ;
-static int         spiFds [16] ;
-
-
-/*
- * spiGetFd:
- *	Return the file-descriptor for the given channel
- *********************************************************************************
- */
-
-int spiGetFd (int channel)
-{
-  return spiFds [channel & 1] ;
-}
-
 
 /*
  * spiDataRW:
@@ -68,25 +47,19 @@ int spiGetFd (int channel)
  *********************************************************************************
  */
 
-int spiDataRW (int channel, unsigned char *data, int len)
+int spiDataTransfer (int fd, unsigned char *data, int len)
 {
-  struct spi_ioc_transfer spi ;
+  struct spi_ioc_transfer spiMsg ;
 
-  channel &= 1 ;
+  memset (&spiMsg, 0, sizeof (spiMsg)) ;
 
-// Mentioned in spidev.h but not used in the original kernel documentation
-//	test program )-:
+  spiMsg.tx_buf        = (unsigned long)data ;
+  spiMsg.rx_buf        = (unsigned long)data ;
+  spiMsg.len           = len ;
+  spiMsg.delay_usecs   = spiDelay ;
+  spiMsg.bits_per_word = spiBPW ;
 
-  memset (&spi, 0, sizeof (spi)) ;
-
-  spi.tx_buf        = (unsigned long)data ;
-  spi.rx_buf        = (unsigned long)data ;
-  spi.len           = len ;
-  spi.delay_usecs   = spiDelay ;
-  spi.speed_hz      = spiSpeeds [channel] ;
-  spi.bits_per_word = spiBPW ;
-
-  return ioctl (spiFds [channel], SPI_IOC_MESSAGE(1), &spi) ;
+  return ioctl (fd, SPI_IOC_MESSAGE(1), &spiMsg) ;
 }
 
 
@@ -96,29 +69,24 @@ int spiDataRW (int channel, unsigned char *data, int len)
  *********************************************************************************
  */
 
-int spiSetupMode (const static char *spidev, int speed, int mode)
+int spiSetupMode (const char *spidev, int speed, int mode)
 {
   int fd ;
 
   mode    &= 3 ;	// Mode is 0, 1, 2 or 3
-  channel &= 1 ;	// Channel is 0 or 1
-
   if ((fd = open (spidev, O_RDWR)) < 0)
-    return nightWiringFailure (WPI_ALMOST, "Unable to open SPI device: %s\n", strerror (errno)) ;
-
-  spiSpeeds [channel] = speed ;
-  spiFds    [channel] = fd ;
+    return nightWiringFailure (NW_ALMOST, "Unable to open SPI device: %s\n", strerror (errno)) ;
 
 // Set SPI parameters.
 
   if (ioctl (fd, SPI_IOC_WR_MODE, &mode)            < 0)
-    return nightWiringFailure (WPI_ALMOST, "SPI Mode Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI Mode Change failure: %s\n", strerror (errno)) ;
   
   if (ioctl (fd, SPI_IOC_WR_BITS_PER_WORD, &spiBPW) < 0)
-    return nightWiringFailure (WPI_ALMOST, "SPI BPW Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI BPW Change failure: %s\n", strerror (errno)) ;
 
   if (ioctl (fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed)   < 0)
-    return nightWiringFailure (WPI_ALMOST, "SPI Speed Change failure: %s\n", strerror (errno)) ;
+    return nightWiringFailure (NW_ALMOST, "SPI Speed Change failure: %s\n", strerror (errno)) ;
 
   return fd ;
 }
@@ -130,7 +98,7 @@ int spiSetupMode (const static char *spidev, int speed, int mode)
  *********************************************************************************
  */
 
-int spiSetup (int channel, int speed)
+int spiSetup (const char *spidev, int speed)
 {
-  return spiSetupMode (channel, speed, 0) ;
+  return spiSetupMode (spidev, speed, 0) ;
 }

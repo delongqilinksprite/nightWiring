@@ -71,10 +71,11 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 
-#include "softPwm.h"
-#include "softTone.h"
+#include "nightWiringSoftPwm.h"
+#include "nightWiringSoftTone.h"
 
 #include "nightWiring.h"
+#include "nightWiringGPIO.h"
 
 // Environment Variables
 
