@@ -1,0 +1,7 @@
+#####################################################
+#            For Fennec BMC Pipline Debug           #
+#        By Xiaohai Li (haixiaolee@gmail.com)       #
+#####################################################
+echo "[Compile]"
+gcc -o bmc-serial bmc-serial.c -lnightWiring -lpthread
+echo "[Finish]"
